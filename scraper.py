@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-
+import logging
 
 def fetch_playlist_html(playlist_id, max_scroll_attempts=10):
     PLAYLIST_URL = f"https://www.youtube.com/playlist?list={playlist_id}"
@@ -22,7 +22,7 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=10):
         scroll_attempts = 0
 
         while scroll_attempts < max_scroll_attempts:
-            print(f"正在嘗試第 {scroll_attempts + 1} 次滾動...")
+            logging.info(f"正在嘗試第 {scroll_attempts + 1} 次滾動...")
             # 滾動到底部
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
             time.sleep(5)
@@ -31,7 +31,7 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=10):
             try:
                 show_more_button = page.query_selector('tp-yt-paper-button#button[aria-label="顯示更多"]')
                 if show_more_button:
-                    print("發現 '顯示更多' 按鈕，嘗試點擊...")
+                    logging.info("發現 '顯示更多' 按鈕，嘗試點擊...")
                     show_more_button.click()
                     time.sleep(2)
             except:
@@ -39,7 +39,7 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=10):
 
              # 重新獲取影片計數
             current_video_count = len(page.query_selector_all('ytd-playlist-video-renderer'))
-            print(f"目前影片數量: {current_video_count}")
+            logging.info(f"目前影片數量: {current_video_count}")
             
              # 如果影片數量沒有變化，則增加嘗試計數
             if current_video_count == previous_video_count:
