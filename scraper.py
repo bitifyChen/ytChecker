@@ -15,7 +15,7 @@ def fetch_playlist_html(playlist_id):
         page = context.new_page()
 
         page.goto(PLAYLIST_URL, timeout=60000)
-        page.wait_for_selector('ytd-playlist-video-renderer', timeout=60000)
+        page.wait_for_selector('ytd-playlist-video-renderer', timeout=120000)
 
         # 自動向下滑動直到載入全部內容
         last_height = page.evaluate("document.documentElement.scrollHeight")
