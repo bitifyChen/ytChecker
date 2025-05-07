@@ -9,7 +9,7 @@ from common.tg import sendTGNotify
 from common.line import sendLINENotify
 
 if not firebase_admin._apps:
-  cred = credentials.Certificate('./etc/secrets/firebase.json')
+  cred = credentials.Certificate('/etc/secrets/firebase.json')
   firebase_admin.initialize_app(cred)
 db = firestore.client()
 
