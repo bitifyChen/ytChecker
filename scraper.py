@@ -15,14 +15,13 @@ def fetch_playlist_html(playlist_id):
         page = context.new_page()
 
         page.goto(PLAYLIST_URL, timeout=60000)
-        page.wait_for_selector('ytd-playlist-video-renderer', timeout=120000)
+        page.wait_for_selector('ytd-playlist-video-renderer', timeout=60000)
 
         # 自動向下滑動直到載入全部內容
         last_height = page.evaluate("document.documentElement.scrollHeight")
         while True:
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
-            time.sleep(3)  # 增加等待時間
-            page.wait_for_timeout(5000)  # 等待更多時間以確保內容加載
+            time.sleep(3)
             new_height = page.evaluate("document.documentElement.scrollHeight")
             if new_height == last_height:
                 break
