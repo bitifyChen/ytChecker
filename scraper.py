@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 
 
 
-def fetch_playlist_html(playlist_id):
+def fetch_playlist_html(playlist_id, max_scroll_attempts=10):
     PLAYLIST_URL = f"https://www.youtube.com/playlist?list={playlist_id}"
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -17,10 +17,12 @@ def fetch_playlist_html(playlist_id):
         page.goto(PLAYLIST_URL, timeout=60000)
         page.wait_for_selector('ytd-playlist-video-renderer', timeout=120000)
 
-        # 初始化影片計數
+        # 初始化影片計數與嘗試次數
         previous_video_count = 0
+        scroll_attempts = 0
 
-        while True:
+        while scroll_attempts < max_scroll_attempts:
+            print(f"正在嘗試第 {scroll_attempts + 1} 次滾動...")
             # 滾動到底部
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
             time.sleep(5)
@@ -29,17 +31,21 @@ def fetch_playlist_html(playlist_id):
             try:
                 show_more_button = page.query_selector('tp-yt-paper-button#button[aria-label="顯示更多"]')
                 if show_more_button:
+                    print("發現 '顯示更多' 按鈕，嘗試點擊...")
                     show_more_button.click()
                     time.sleep(2)
             except:
                 pass
 
-            # 重新獲取影片計數
+             # 重新獲取影片計數
             current_video_count = len(page.query_selector_all('ytd-playlist-video-renderer'))
+            print(f"目前影片數量: {current_video_count}")
             
-            # 如果影片數量沒有變化，表示已經載入完畢
+             # 如果影片數量沒有變化，則增加嘗試計數
             if current_video_count == previous_video_count:
-                break
+                scroll_attempts += 1
+            else:
+                scroll_attempts = 0  # 如果有新的影片載入，重置嘗試計數
             
             previous_video_count = current_video_count
 
