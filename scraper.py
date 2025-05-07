@@ -22,6 +22,7 @@ def fetch_playlist_html(playlist_id):
         while True:
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
             time.sleep(3)  # 增加等待時間
+            page.wait_for_timeout(5000)  # 等待更多時間以確保內容加載
             new_height = page.evaluate("document.documentElement.scrollHeight")
             if new_height == last_height:
                 break
