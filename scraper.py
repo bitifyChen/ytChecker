@@ -21,8 +21,7 @@ def fetch_playlist_html(playlist_id):
         last_height = page.evaluate("document.documentElement.scrollHeight")
         while True:
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
-            page.wait_for_load_state('networkidle')
-            
+            time.sleep(5)
             new_height = page.evaluate("document.documentElement.scrollHeight")
             if new_height == last_height:
                 break
