@@ -1,3 +1,4 @@
+import os
 from flask_restful import Resource,abort
 from flask import jsonify, request
 import firebase_admin
@@ -9,7 +10,8 @@ from common.tg import sendTGNotify
 from common.line import sendLINENotify
 
 if not firebase_admin._apps:
-  cred = credentials.Certificate('/etc/secrets/firebase.json')
+  firebase_path = os.getenv('FIREBASE_CREDENTIALS_PATH', './etc/secrets/firebase.json')
+  cred = credentials.Certificate(firebase_path)
   firebase_admin.initialize_app(cred)
 db = firestore.client()
 
