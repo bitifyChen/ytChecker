@@ -17,15 +17,31 @@ def fetch_playlist_html(playlist_id):
         page.goto(PLAYLIST_URL, timeout=60000)
         page.wait_for_selector('ytd-playlist-video-renderer', timeout=120000)
 
-        # 自動向下滑動直到載入全部內容
-        last_height = page.evaluate("document.documentElement.scrollHeight")
+        # 初始化影片計數
+        previous_video_count = 0
+
         while True:
+            # 滾動到底部
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
             time.sleep(5)
-            new_height = page.evaluate("document.documentElement.scrollHeight")
-            if new_height == last_height:
+
+            # 嘗試點擊 "顯示更多" (如果存在)
+            try:
+                show_more_button = page.query_selector('tp-yt-paper-button#button[aria-label="顯示更多"]')
+                if show_more_button:
+                    show_more_button.click()
+                    time.sleep(2)
+            except:
+                pass
+
+            # 重新獲取影片計數
+            current_video_count = len(page.query_selector_all('ytd-playlist-video-renderer'))
+            
+            # 如果影片數量沒有變化，表示已經載入完畢
+            if current_video_count == previous_video_count:
                 break
-            last_height = new_height
+            
+            previous_video_count = current_video_count
 
         html = page.content()
         browser.close()
