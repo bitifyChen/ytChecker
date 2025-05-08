@@ -11,8 +11,14 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
     PLAYLIST_URL = f"https://www.youtube.com/playlist?list={playlist_id}"
     print(f"Fetching playlist HTML from: {PLAYLIST_URL}", flush=True)
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context()
+        browser = p.chromium.launch(headless=True, args=[
+            "--disable-dev-shm-usage",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--disable-setuid-sandbox"
+        ])
+        context = browser.new_context(viewport={"width": 1280, "height": 720})
         page = context.new_page()
 
         page.goto(PLAYLIST_URL, timeout=60000)
@@ -27,6 +33,18 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
             # 滾動到底部
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
             time.sleep(2)
+            
+            # 確認高度是否有變化
+            new_height = page.evaluate("document.documentElement.scrollHeight")
+            print(f"頁面高度: {new_height}", flush=True)
+
+            # 檢查是否有 "顯示更多" 按鈕
+            show_more_button = page.query_selector('tp-yt-paper-button#button[aria-label="顯示更多"]')
+            if show_more_button:
+                print("發現 '顯示更多' 按鈕，嘗試點擊...", flush=True)
+                show_more_button.click()
+                page.wait_for_timeout(2000)
+
 
             # 檢查新的影片是否加載進來
             current_video_count = len(page.query_selector_all('#content ytd-playlist-video-renderer'))
@@ -34,11 +52,14 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
             
             if current_video_count == previous_video_count:
                 scroll_attempts += 1
+                print(f"沒有載入新影片，第 {scroll_attempts} 次嘗試失敗...", flush=True)
             else:
                 scroll_attempts = 0  # 如果有新資料，重置計數
+                print(f"沒有載入新影片，第 {scroll_attempts} 次嘗試失敗...", flush=True)
             
             previous_video_count = current_video_count
 
+        print("完成所有滾動動作，開始擷取 HTML...", flush=True)
         html = page.content()
         browser.close()
     return html
