@@ -23,14 +23,14 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
         scroll_attempts = 0
 
         while scroll_attempts < max_scroll_attempts:
-            logging.info(f"正在嘗試第 {scroll_attempts + 1} 次滾動...")
+            print(f"正在嘗試第 {scroll_attempts + 1} 次滾動...", flush=True)
             # 滾動到底部
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
             time.sleep(2)
 
             # 檢查新的影片是否加載進來
             current_video_count = len(page.query_selector_all('#content ytd-playlist-video-renderer'))
-            logging.info(f"目前影片數量: {current_video_count}")
+            print(f"目前影片數量: {current_video_count}", flush=True)
             
             if current_video_count == previous_video_count:
                 scroll_attempts += 1
