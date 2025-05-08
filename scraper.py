@@ -28,16 +28,13 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
         previous_video_count = len(page.query_selector_all('#content ytd-playlist-video-renderer'))
         scroll_attempts = 0
 
-                # 立即顯示第一次載入的 HTML
-        print(f"\n\n[HTML SNAPSHOT]", flush=True)
-        print(page.content(), flush=True)  # 只顯示前 1000 字元
-        print("\n[...HTML END...]\n\n", flush=True)
-
         while scroll_attempts < max_scroll_attempts:
             print(f"正在嘗試第 {scroll_attempts + 1} 次滾動...", flush=True)
             # 滾動到底部
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight);")
-            time.sleep(2)
+            
+            # wait for the page to load
+            page.wait_for_timeout(5000)
             
             # 確認高度是否有變化
             new_height = page.evaluate("document.documentElement.scrollHeight")
