@@ -9,6 +9,7 @@ import logging
 
 def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
     PLAYLIST_URL = f"https://www.youtube.com/playlist?list={playlist_id}"
+    print(f"Fetching playlist HTML from: {PLAYLIST_URL}", flush=True)
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context()
