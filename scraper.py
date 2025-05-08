@@ -11,7 +11,7 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
     PLAYLIST_URL = f"https://www.youtube.com/playlist?list={playlist_id}"
     print(f"Fetching playlist HTML from: {PLAYLIST_URL}", flush=True)
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True, args=[
+        browser = p.chromium.launch(headless=False, args=[
             "--disable-dev-shm-usage",
             "--no-sandbox",
             "--disable-gpu",
@@ -28,6 +28,11 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
         previous_video_count = len(page.query_selector_all('#content ytd-playlist-video-renderer'))
         scroll_attempts = 0
 
+                # 立即顯示第一次載入的 HTML
+        print(f"\n\n[HTML SNAPSHOT]", flush=True)
+        print(page.content(), flush=True)  # 只顯示前 1000 字元
+        print("\n[...HTML END...]\n\n", flush=True)
+
         while scroll_attempts < max_scroll_attempts:
             print(f"正在嘗試第 {scroll_attempts + 1} 次滾動...", flush=True)
             # 滾動到底部
@@ -37,14 +42,6 @@ def fetch_playlist_html(playlist_id, max_scroll_attempts=3):
             # 確認高度是否有變化
             new_height = page.evaluate("document.documentElement.scrollHeight")
             print(f"頁面高度: {new_height}", flush=True)
-
-            # 檢查是否有 "顯示更多" 按鈕
-            show_more_button = page.query_selector('tp-yt-paper-button#button[aria-label="顯示更多"]')
-            if show_more_button:
-                print("發現 '顯示更多' 按鈕，嘗試點擊...", flush=True)
-                show_more_button.click()
-                page.wait_for_timeout(2000)
-
 
             # 檢查新的影片是否加載進來
             current_video_count = len(page.query_selector_all('#content ytd-playlist-video-renderer'))
